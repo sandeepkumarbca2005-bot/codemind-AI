@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import StreamingResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
@@ -16,6 +16,20 @@ except Exception:
     OpenAI = None
 
 load_dotenv()
+
+FRONTEND_DIR = Path(__file__).resolve().parent.parent
+FRONTEND_PAGES = {
+    "analytics.html",
+    "courses.html",
+    "dashboard.html",
+    "final-test.html",
+    "index.html",
+    "leaderboard.html",
+    "learn.html",
+    "learning.html",
+    "select-language.html",
+    "tests.html",
+}
 
 app = FastAPI(
     title="Smart AI Learning System",
@@ -1545,6 +1559,9 @@ CURRICULUM = {
 # ============ AUTH ENDPOINTS ============
 @app.get("/")
 def read_root():
+    index_path = FRONTEND_DIR / "index.html"
+    if index_path.exists():
+        return FileResponse(index_path)
     return {"message": "Smart AI Learning System API - Running!"}
 
 @app.get("/health")
@@ -2622,6 +2639,17 @@ def get_final_test(language: str):
             for i in range(10)
         ]
     }
+
+
+@app.get("/{page_name}")
+def serve_frontend_page(page_name: str):
+    if page_name not in FRONTEND_PAGES:
+        raise HTTPException(status_code=404, detail="Not found")
+    page_path = FRONTEND_DIR / page_name
+    if not page_path.exists():
+        raise HTTPException(status_code=404, detail="Page not found")
+    return FileResponse(page_path)
+
 
 if __name__ == "__main__":
     import uvicorn
