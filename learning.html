@@ -450,7 +450,10 @@
 
 <script>
 // Minimal safe tutor page
-let API_URL = localStorage.getItem('apiUrl') || 'http://localhost:8000';
+const DEFAULT_API_URL = window.location.origin && window.location.origin !== 'null'
+    ? window.location.origin
+    : 'http://localhost:8000';
+let API_URL = DEFAULT_API_URL;
 const USE_STREAMING = window.location.protocol !== 'file:';
 let aiOnline = true;
 function sanitizeLanguageName(value){
@@ -1113,13 +1116,13 @@ function formatAiError(err){
     const raw = (err && (err.detail || err.message)) ? (err.detail || err.message) : String(err || '');
     const msg = raw.toLowerCase();
     if(msg.includes('failed to fetch') || msg.includes('network') || msg.includes('fetch')){
-        return 'Cannot reach the AI service. Make sure the backend is running and API_URL is correct.';
+        return 'Cannot reach the AI service. Please refresh and try again.';
     }
     if(msg.includes('openai_api_key is not configured') || msg.includes('not configured')){
-        return 'OPENAI_API_KEY is not configured. Set it in .env, then restart the backend.';
+        return 'OPENAI_API_KEY is not configured on the server.';
     }
     if(msg.includes('invalid_api_key') || msg.includes('incorrect api key') || msg.includes('api key')){
-        return 'Your OPENAI_API_KEY is invalid. Update it in .env and restart the backend.';
+        return 'Your OPENAI_API_KEY is invalid. Update it in the server environment variables.';
     }
     if(msg.includes('rate limit')){
         return 'Rate limit hit. Wait a moment and try again.';
@@ -1149,16 +1152,26 @@ async function pingApi(url, timeoutMs){
 
 async function resolveApiUrl(){
     const saved = localStorage.getItem('apiUrl');
-    const candidates = saved ? [saved] : ['http://localhost:8000', 'http://localhost:8001'];
+    const candidates = [DEFAULT_API_URL];
+    if(saved && saved !== DEFAULT_API_URL && window.location.protocol === 'file:'){
+        candidates.push(saved);
+    }
+    if(window.location.protocol === 'file:'){
+        candidates.push('http://localhost:8000', 'http://localhost:8001');
+    }
     for(const base of candidates){
         if(await pingApi(base, 1200)){
             API_URL = base;
-            localStorage.setItem('apiUrl', base);
+            if(window.location.protocol === 'file:'){
+                localStorage.setItem('apiUrl', base);
+            } else {
+                localStorage.removeItem('apiUrl');
+            }
             aiOnline = true;
             return;
         }
     }
-    API_URL = candidates[0] || 'http://localhost:8000';
+    API_URL = DEFAULT_API_URL;
     aiOnline = false;
 }
 

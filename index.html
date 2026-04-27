@@ -795,7 +795,9 @@
     </div>
 
     <script>
-        const API_URL = 'http://localhost:8000';
+        const API_URL = window.location.origin && window.location.origin !== 'null'
+            ? window.location.origin
+            : 'http://localhost:8000';
         let token = localStorage.getItem('token');
 
         function toggleForms() {
@@ -893,7 +895,7 @@
                 window.location.href = 'dashboard.html';
             } catch (error) {
                 if (error instanceof TypeError && error.message.includes('fetch')) {
-                    errorDiv.textContent = 'Cannot connect to server. Make sure the backend is running on port 8000.';
+                    errorDiv.textContent = 'Cannot connect to server. Please refresh and try again.';
                 } else {
                     errorDiv.textContent = error.message || 'Login failed';
                 }
@@ -959,7 +961,7 @@
                 }, 900);
             } catch (error) {
                 if (error instanceof TypeError && error.message.includes('fetch')) {
-                    errorDiv.textContent = 'Cannot connect to server. Make sure the backend is running on port 8000.';
+                    errorDiv.textContent = 'Cannot connect to server. Please refresh and try again.';
                 } else {
                     errorDiv.textContent = error.message || 'Registration failed';
                 }

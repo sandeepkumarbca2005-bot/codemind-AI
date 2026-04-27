@@ -219,7 +219,9 @@
     </div>
 
     <script>
-        const API_URL = 'http://localhost:8000';
+        const API_URL = window.location.origin && window.location.origin !== 'null'
+            ? window.location.origin
+            : 'http://localhost:8000';
         const EVAL_ENDPOINT = `${API_URL}/debug/evaluate`;
         const token = localStorage.getItem('token');
         const activeEmail = String(localStorage.getItem('email') || '').trim().toLowerCase();
