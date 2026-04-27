@@ -9,6 +9,8 @@ services:
     envVars:
       - key: DEBUG
         value: "False"
+      - key: PYTHON_VERSION
+        value: "3.12.0"
       - key: AI_PROVIDER
         value: openai
       - key: OPENAI_MODEL
